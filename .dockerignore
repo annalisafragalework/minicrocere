@@ -1,0 +1,18 @@
+# Dipendenze PHP
+/vendor
+
+# Dipendenze Node
+/node_modules
+
+# Ambiente
+.env
+.phpunit.result.cache
+
+# Log e cache
+/storage/*.log
+/storage/logs/
+/bootstrap/cache/
+
+# Cartelle di build e Git
+.git
+.gitignore
