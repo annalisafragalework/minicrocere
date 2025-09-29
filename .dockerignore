@@ -1,20 +1,12 @@
-# Dipendenze PHP
 /vendor
 /storage
 /bootstrap/cache/
-
-# Dipendenze Node e file di compilazione frontend
 /node_modules
 /public/hot
-/public/build
 /npm-debug.log
 /yarn-error.log
-
-# Ambiente e file di cache locale
 .env
-.env.example # Non serve nell'immagine
+.env.example
 .phpunit.result.cache
-
-# Cartelle e file di controllo versione
 .git
 .gitignore

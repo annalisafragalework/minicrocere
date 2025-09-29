@@ -1,52 +1,70 @@
 services:
-  # 1. SERVIZIO LARAVEL/PHP
+  # 1. PHP/LARAVEL (app)
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: laravel-app
-    restart: unless-stopped
+    container_name: minicrocera-app
+    restart: always
     working_dir: /var/www/html
+    user: "501"  # UID locale su Mac (verifica con `id -u`)
     volumes:
-      - .:/var/www/html
+      - .:/var/www/html:cached  # Usa :cached per migliorare performance su Mac
+      # ATTENZIONE: questa riga può causare problemi se la cartella vendor non esiste sul host
+      # Se hai problemi con composer install, commentala:
+      # - /var/www/html/vendor
     networks:
-      - laravel_network
+      - minicrocera_network
+    depends_on:
+      - db
+      - redis
 
-  # 2. SERVIZIO NGINX (WEB SERVER)
+  # 2. NGINX (web server)
   nginx:
-    image: nginx:stable-alpine
-    container_name: laravel-nginx
-    restart: unless-stopped
+    image: nginx:1.21-alpine
+    container_name: minicrocera-nginx
+    restart: always
     ports:
       - "8000:80"
     volumes:
-      - .:/var/www/html
-      - ./docker/nginx/conf.d:/etc/nginx/conf.d/
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      - .:/var/www/html:cached
+    networks:
+      - minicrocera_network
     depends_on:
       - app
-    networks:
-      - laravel_network
 
-  # 3. SERVIZIO DATABASE (MYSQL)
+  # 3. MARIADB/MYSQL (database)
   db:
-    image: mysql:8.0
-    container_name: laravel-db
-    restart: unless-stopped
+    image: mariadb:10
+    container_name: minicrocera-db
+    restart: always
+    ports:
+      - "3306:3306"
     environment:
-      MYSQL_DATABASE: minicrocera
       MYSQL_ROOT_PASSWORD: root
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
+      MYSQL_DATABASE: minicrocera
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+   #ph command: --bind-address=0.0.0.0
     volumes:
-      - dbdata:/var/lib/mysql
+      - db_data:/var/lib/mysql
     networks:
-      - laravel_network
+      - minicrocera_network
 
-# Reti e Volumi
-networks:
-  laravel_network:
-    driver: bridge
+  # 4. REDIS (caching)
+  redis:
+    image: redis:alpine
+    container_name: minicrocera-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - minicrocera_network
 
 volumes:
-  dbdata:
-    driver: local
+  db_data:
+
+networks:
+  minicrocera_network:
+    driver: bridge
