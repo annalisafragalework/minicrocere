@@ -46,5 +46,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public function crociereMini()
+{
+    return $this->hasMany(\Modules\MiniCrociere\Entities\MiniCrocieraUtente::class, 'user_id');
+}
+
     
 }

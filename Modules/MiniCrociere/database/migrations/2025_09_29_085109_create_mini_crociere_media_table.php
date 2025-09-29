@@ -14,20 +14,18 @@ return new class extends Migration
       Schema::create('mini_crociere_media', function (Blueprint $table) {
     $table->id();
 
-    // Collegamento generico a qualsiasi entità
-    $table->string('tipo'); // es: 'crociera', 'itinerario', 'escursione', 'cabina'
-    $table->unsignedBigInteger('_id'); // ID dell'entità associata
+    $table->string('entita'); // 'crociera', 'cabina', 'itinerario', 'escursione'
+    $table->unsignedBigInteger('entita_id'); // ID dell'entità associata
 
-    // Dati dell'immagine
-    $table->string('path'); // es: 'images/crociere/crociera1.jpg'
+    $table->string('path'); // es: 'images/cabine/cabina1.jpg'
     $table->string('titolo')->nullable();
     $table->text('descrizione')->nullable();
 
     $table->timestamps();
 
-    // Indicizzazione per performance
-    $table->index(['tipo', 'riferimento_id']);
+    $table->index(['entita', 'entita_id']);
 });
+ 
     }
 
     /**
