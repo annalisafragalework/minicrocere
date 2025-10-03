@@ -46,11 +46,12 @@ services:
       MYSQL_DATABASE: minicrocera
       MYSQL_USER: root
       MYSQL_PASSWORD: root
-   #ph command: --bind-address=0.0.0.0
+      XDG_CONFIG_HOME: /var/www/.config
     volumes:
       - db_data:/var/lib/mysql
     networks:
       - minicrocera_network
+
 
   # 4. REDIS (caching)
   redis:

@@ -1,0 +1,9 @@
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+<!-- Custom JS -->
+<script src="<?php echo e(asset('js/admin.js')); ?>"></script>
+<?php /**PATH /var/www/html/resources/views/admin/scripts.blade.php ENDPATH**/ ?>
