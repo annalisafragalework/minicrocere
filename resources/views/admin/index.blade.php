@@ -7,6 +7,7 @@
 <main class="content-dashboard">
     <div class="container-fluid">
         @php 
+       
             $ruoli = $user->getRoleNames()->toArray();
         @endphp
 

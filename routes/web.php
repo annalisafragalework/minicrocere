@@ -9,7 +9,7 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\Auth\LoginController;
- 
+ use App\Http\Controllers\UtenteController;
 // Homepage pubblica
 Route::get('/', function () {
     return view('dashboard/index');
@@ -18,8 +18,31 @@ Route::get('/', function () {
  Route::middleware(['auth'])->group(function () {
     Route::get('/admin/index', [AdminController::class, 'index'])->name('admin.index');
 });
+ Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/utenti', [AdminController::class, 'utenti'])->name('admin.utenti');
+});
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/admin/api', [AdminController::class, 'api'])->name('admin.api');
+    });
+
+Route::resource('admin/utenti', UtenteController::class)
+    ->parameters(['utenti' => 'utente'])
+    ->names([
+        'index'   => 'admin.utenti.index',
+        'create'  => 'admin.utenti.create',
+        'store'   => 'admin.utenti.store',
+        'show'    => 'admin.utenti.show',
+        'edit'    => 'admin.utenti.edit',
+        'update'  => 'admin.utenti.update',
+        'destroy' => 'admin.utenti.destroy',
+    ]);
+
+ 
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
+//UTENTE
+
+ 
