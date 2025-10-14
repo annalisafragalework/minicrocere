@@ -126,10 +126,7 @@ return [
         // App\Providers\EventServiceProvider::class,
         // App\Providers\RouteServiceProvider::class,
 
-        /*
-         * Module Service Providers (Il tuo modulo)
-         */
-        Modules\MiniCrociere\Providers\MiniCrociereServiceProvider::class, // <-- IL TUO MODULO QUI!
+   
 
     ],
 

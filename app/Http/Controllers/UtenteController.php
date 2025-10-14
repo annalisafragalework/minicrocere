@@ -5,77 +5,122 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+ use Illuminate\Support\Str;
 class UtenteController extends Controller
 {
-    public function index()
+    // Lista pazienti di uno specifico dottore
+    public function index(User $dottore)
     {
-
-        $utenti = User::paginate(10); // paginazione
-        
-        return view('admin.utenti.index', compact('utenti'));
+        $pazienti = $dottore->patients()->with('roles')->paginate(10);
+        return view('admin.dottori.pazienti.index', compact('dottore', 'pazienti'));
     }
 
-    public function create()
+    // Form per creare un nuovo paziente
+    public function create(User $dottore)
     {
-        return view('admin.utenti.create');
+        return view('admin.dottori.pazienti.create', compact('dottore'));
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
+    // Salvataggio nuovo paziente
+ 
 
-        User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
-        ]);
-
-        return redirect()->route('utenti.index')->with('success', 'Utente creato con successo.');
-    }
-
-public function edit(User $utente)
+public function store(Request $request, User $dottore)
 {
-    $ruoliDisponibili = Role::pluck('name')->toArray();
-
-    return view('admin.utenti.edit', compact('utente', 'ruoliDisponibili'));
-}
-
-
-public function update(Request $request, User $utente)
-{
-    // Validazione dei dati
     $validated = $request->validate([
         'name'  => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email,' . $utente->id,
-        'ruoli' => 'nullable|array', // opzionale, se non selezioni nulla
-        'ruoli.*' => 'string|exists:roles,name', // ogni ruolo deve esistere
+        'email' => 'required|email|unique:users,email',
+        // 'password' non richiesto nel form
     ]);
 
-    // Aggiorna nome ed email
-    $utente->update([
-        'name'  => $validated['name'],
-        'email' => $validated['email'],
+    $password = Str::password(12); // oppure Str::random(10)
+
+    $paziente = User::create([
+        'name'        => $validated['name'],
+        'email'       => $validated['email'],
+        'password'    => bcrypt($password),
+        'dottore_id'  => $dottore->id,
     ]);
 
-    // Sincronizza i ruoli (se presenti)
-    if (isset($validated['ruoli'])) {
-        $utente->syncRoles($validated['ruoli']);
-    } else {
-        $utente->syncRoles([]); // rimuove tutti i ruoli se nessuno selezionato
-    }
+    $paziente->assignRole('paziente');
 
-    // Redirect con messaggio
-    return redirect()->route('admin.utenti.index')
-                     ->with('success', 'Utente aggiornato con successo.');
+    // Se vuoi mostrare la password generata:
+    return redirect()->route('admin.dottori.pazienti.index', $dottore)
+                     ->with('success', "Paziente creato con successo. Password: $password");
 }
-    public function destroy(User $utente)
-    {
-        $utente->delete();
-        return redirect()->route('admin.utenti.index')->with('success', 'Utente eliminato.');
-    }
+
  
+
+
+
+
+// public function store(Request $request, User $dottore)
+// {
+//     $validated = $request->validate([
+//         'name'     => 'required|string|max:255',
+//         'email'    => 'required|email|unique:users,email',
+//         'password' => 'required|string|min:6',
+//     ]);
+
+//     $paziente = User::create([
+//         'name'        => $validated['name'],
+//         'email'       => $validated['email'],
+//         'password'    => bcrypt($validated['password']),
+//         'dottore_id'  => $dottore->id,
+//     ]);
+
+//     $paziente->assignRole('paziente');
+
+//     return redirect()->route('admin.dottori.pazienti.index', $dottore)
+//                      ->with('success', 'Paziente creato con successo.');
+// }   
+
+    // Form di modifica paziente
+    public function edit(User $dottore, User $paziente)
+    {
+          dd($dottore, $paziente);
+        if ($paziente->dottore_id !== $dottore->id) {
+            abort(403, 'Accesso non autorizzato');
+        }
+
+        return view('admin.dottori.pazienti.edit', compact('dottore', 'paziente'));
+    }
+
+    // Aggiornamento paziente
+    public function update(Request $request, User $dottore, User $paziente)
+    {
+        if ($paziente->dottore_id !== $dottore->id) {
+            abort(403, 'Accesso non autorizzato');
+        }
+
+        $validated = $request->validate([
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $paziente->id,
+        ]);
+
+        $paziente->update($validated);
+
+        return redirect()->route('admin.dottori.pazienti.index', $dottore)
+                         ->with('success', 'Paziente aggiornato con successo.');
+    }
+
+    // Eliminazione paziente
+    public function destroy(User $dottore, User $paziente)
+    {
+        if ($paziente->dottore_id !== $dottore->id) {
+            abort(403, 'Accesso non autorizzato');
+        }
+
+        $paziente->delete();
+
+        return redirect()->route('admin.dottori.pazienti.index', $dottore)
+                         ->with('success', 'Paziente eliminato con successo.');
+    }
+
+    // Rotta personalizzata (opzionale)
+    public function pazientiDelDottore(User $dottore)
+    {
+        return $this->index($dottore);
+    }
 }

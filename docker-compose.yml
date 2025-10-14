@@ -4,17 +4,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: minicrocera-app
+    container_name: crmmedicifamiglia-app
     restart: always
     working_dir: /var/www/html
     user: "501"  # UID locale su Mac (verifica con `id -u`)
     volumes:
-      - .:/var/www/html:cached  # Usa :cached per migliorare performance su Mac
-      # ATTENZIONE: questa riga può causare problemi se la cartella vendor non esiste sul host
-      # Se hai problemi con composer install, commentala:
-      # - /var/www/html/vendor
+      - .:/var/www/html:cached
+      # - /var/www/html/vendor  # Commenta se vendor non esiste
     networks:
-      - minicrocera_network
+      - crmmedicifamiglia_network
     depends_on:
       - db
       - redis
@@ -22,7 +20,7 @@ services:
   # 2. NGINX (web server)
   nginx:
     image: nginx:1.21-alpine
-    container_name: minicrocera-nginx
+    container_name: crmmedicifamiglia-nginx
     restart: always
     ports:
       - "8000:80"
@@ -30,42 +28,41 @@ services:
       - ./docker/nginx/conf.d:/etc/nginx/conf.d
       - .:/var/www/html:cached
     networks:
-      - minicrocera_network
+      - crmmedicifamiglia_network
     depends_on:
       - app
 
-  # 3. MARIADB/MYSQL (database)
+  # 3. MARIADB (database)
   db:
     image: mariadb:10
-    container_name: minicrocera-db
+    container_name: crmmedicifamiglia-db
     restart: always
     ports:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: minicrocera
+      MYSQL_DATABASE: crmmedicifamiglia
       MYSQL_USER: root
       MYSQL_PASSWORD: root
       XDG_CONFIG_HOME: /var/www/.config
     volumes:
       - db_data:/var/lib/mysql
     networks:
-      - minicrocera_network
-
+      - crmmedicifamiglia_network
 
   # 4. REDIS (caching)
   redis:
     image: redis:alpine
-    container_name: minicrocera-redis
+    container_name: crmmedicifamiglia-redis
     restart: always
     ports:
       - "6379:6379"
     networks:
-      - minicrocera_network
+      - crmmedicifamiglia_network
 
 volumes:
   db_data:
 
 networks:
-  minicrocera_network:
+  crmmedicifamiglia_network:
     driver: bridge

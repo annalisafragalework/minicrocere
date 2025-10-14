@@ -18,8 +18,13 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name',
+        'lastname',
+        'codefiscal',
+        'vat_number',
+        'phone',
         'email',
         'password',
+
     ];
 
     protected $hidden = [
@@ -27,20 +32,13 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+protected $casts = [
+    'email_verified_at' => 'datetime',
+    'password' => 'hashed',
+];
 
     // Relazione con MiniCrociere
-    public function crociereMini()
-    {
-        return $this->hasMany(\Modules\MiniCrociere\Entities\Utente::class, 'user_id');
-    }
-
+ 
     // Relazione con moduli (multi-modularità)
     public function modules()
     {
@@ -64,7 +62,7 @@ class User extends Authenticatable
             ->exists();
     }
 
-    // Scope per filtrare utenti in un modulo
+    // Scope per filtrare dottori in un modulo
     public function scopeInModulo($query, $modulo)
     {
         return $query->whereHas('modules', function ($q) use ($modulo) {
@@ -78,17 +76,19 @@ public function getRoleCode(): int
     
     // 1. Priorità massima: Administrator (Codice 1)
     if ($this->hasRole('administrator')) {
+        return 3;
+    }
+
+    // 2. Seconda priorità: dottore (Codice 2)
+    else if ($this->hasRole('dottore')) {
         return 1;
     }
-
-    // 2. Seconda priorità: Proprietario (Codice 2)
-    else if ($this->hasRole('proprietario')) {
+  else if ($this->hasRole('paziente')) {
         return 2;
     }
-
     // 3. Valore di default: Utente (Codice 3)
     // Se non ha i ruoli superiori, viene trattato come utente standard.
-    return 3;
+    return 0;
 }
 public function getHighestRoleName(): string
 {
@@ -101,17 +101,7 @@ public function getHighestRoleName(): string
     // 2. Ruoli assegnati all'utente (lettura dinamica dal DB tramite Spatie)
     $assignedRoles = $this->getRoleNames()->toArray();
     
-    // --- IL RUOLO ASSEGNATO VIENE RESTITUITO QUI ---
-    foreach ($prioritizedRoles as $priorityRole) {
-        if (in_array($priorityRole, $assignedRoles)) {
-            // Se l'utente è 'administrator', restituisce 'administrator'.
-            // Se l'utente è 'proprietario', restituisce 'proprietario'.
-            return $priorityRole; 
-        }
-    }
-   
-    // --- RETE DI SICUREZZA 1: Ruoli assegnati ma non nella lista di priorità ---
-    // Se il ciclo finisce, l'utente ha ruoli (es. 'guest') che non sono in $prioritizedRoles.
+    // 3. Trova il ruolo con la priorità più alta
     if (!empty($assignedRoles)) {
         // Restituisce il primo ruolo trovato nel DB (che è il suo ruolo assegnato)
         return $assignedRoles[0]; 
@@ -122,6 +112,21 @@ public function getHighestRoleName(): string
     return 'default_role_error'; 
 }
 
+// Se l'utente è un dottore
+public function patients()
+{
+    return $this->belongsToMany(User::class, 'doctor_patient', 'doctor_id', 'patient_id')
+                ->withPivot('is_primary', 'location')
+                ->withTimestamps();
+}
+
+// Se l'utente è un paziente
+public function doctors()
+{
+    return $this->belongsToMany(User::class, 'doctor_patient', 'patient_id', 'doctor_id')
+                ->withPivot('is_primary', 'location')
+                ->withTimestamps();
+}
 
 
 
