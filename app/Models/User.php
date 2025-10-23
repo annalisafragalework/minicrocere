@@ -19,11 +19,15 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'lastname',
-        'codefiscal',
+        'fiscal_code',
         'vat_number',
         'phone',
         'email',
         'password',
+          'is_trial',
+        'subscription_id', 
+        'subscription_type',
+        'trial_activated_at',
 
     ];
 
@@ -37,7 +41,20 @@ protected $casts = [
     'password' => 'hashed',
 ];
 
-    // Relazione con MiniCrociere
+public function isTrial(): bool
+{
+    return $this->is_trial === 1;
+}
+
+public function isMonthly(): bool
+{
+    return $this->is_trial === 2;
+}
+
+public function isAnnual(): bool
+{
+    return $this->is_trial === 3;
+}
  
     // Relazione con moduli (multi-modularità)
     public function modules()
@@ -76,15 +93,15 @@ public function getRoleCode(): int
     
     // 1. Priorità massima: Administrator (Codice 1)
     if ($this->hasRole('administrator')) {
-        return 3;
+        return 1;
     }
 
     // 2. Seconda priorità: dottore (Codice 2)
     else if ($this->hasRole('dottore')) {
-        return 1;
+        return 2;
     }
   else if ($this->hasRole('paziente')) {
-        return 2;
+        return 3;
     }
     // 3. Valore di default: Utente (Codice 3)
     // Se non ha i ruoli superiori, viene trattato come utente standard.

@@ -8,19 +8,30 @@ use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
  use Illuminate\Support\Str;
+ use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\MessageBag;
+
 class UtenteController extends Controller
 {
     // Lista pazienti di uno specifico dottore
     public function index(User $dottore)
-    {
-        $pazienti = $dottore->patients()->with('roles')->paginate(10);
-        return view('admin.dottori.pazienti.index', compact('dottore', 'pazienti'));
+    {  
+        if(session('user_role')=="administrator"){
+           
+        $dottori = User::role('dottore')->get();
+        return view('admin.doctor',compact('dottori'));
+        }else{
+            $pazienti = $dottore->patients()->with('roles')->paginate(10);
+            return view('admin.dottori.pazienti.index', compact('dottore', 'pazienti'));
+        }
     }
 
     // Form per creare un nuovo paziente
     public function create(User $dottore)
     {
-        return view('admin.dottori.pazienti.create', compact('dottore'));
+        
+        return view('admin.dottori.create', compact('dottore'));
     }
 
     // Salvataggio nuovo paziente
@@ -29,15 +40,20 @@ class UtenteController extends Controller
 public function store(Request $request, User $dottore)
 {
     $validated = $request->validate([
-        'name'  => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email',
-        // 'password' non richiesto nel form
+        'name' => ['required', 'string', 'max:255'],
+        'lastname' => ['required', 'string', 'max:255'],
+        'fiscal_code' => ['required', 'string', 'size:16'], // CF italiano ha 16 caratteri
+        'phone' => ['required', 'string', 'max:20'], // puoi aggiungere regex se vuoi validare il formato
+        'email' => ['required', 'email', 'max:255'],
     ]);
 
     $password = Str::password(12); // oppure Str::random(10)
 
     $paziente = User::create([
-        'name'        => $validated['name'],
+        'name'  => $validated['name'],
+        'lastname'  => $validated['lastname'],
+        'fiscal_code'  => $validated['fiscal_code'],
+        'phone'        => $validated['phone'],
         'email'       => $validated['email'],
         'password'    => bcrypt($password),
         'dottore_id'  => $dottore->id,
@@ -51,64 +67,80 @@ public function store(Request $request, User $dottore)
 }
 
  
-
-
-
-
-// public function store(Request $request, User $dottore)
-// {
-//     $validated = $request->validate([
-//         'name'     => 'required|string|max:255',
-//         'email'    => 'required|email|unique:users,email',
-//         'password' => 'required|string|min:6',
-//     ]);
-
-//     $paziente = User::create([
-//         'name'        => $validated['name'],
-//         'email'       => $validated['email'],
-//         'password'    => bcrypt($validated['password']),
-//         'dottore_id'  => $dottore->id,
-//     ]);
-
-//     $paziente->assignRole('paziente');
-
-//     return redirect()->route('admin.dottori.pazienti.index', $dottore)
-//                      ->with('success', 'Paziente creato con successo.');
-// }   
+ 
 
     // Form di modifica paziente
-    public function edit(User $dottore, User $paziente)
-    {
-          dd($dottore, $paziente);
-        if ($paziente->dottore_id !== $dottore->id) {
-            abort(403, 'Accesso non autorizzato');
-        }
-
-        return view('admin.dottori.pazienti.edit', compact('dottore', 'paziente'));
+  public function edit(User $dottore)
+{
+   
+    // Verifica se il paziente è associato al dottore
+    if (!$dottore->id) {
+        abort(403, 'Accesso non autorizzato');
     }
+
+    return view('admin.dottori.edit', compact('dottore'));
+}
 
     // Aggiornamento paziente
-    public function update(Request $request, User $dottore, User $paziente)
-    {
-        if ($paziente->dottore_id !== $dottore->id) {
-            abort(403, 'Accesso non autorizzato');
-        }
 
-        $validated = $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $paziente->id,
-        ]);
 
-        $paziente->update($validated);
-
-        return redirect()->route('admin.dottori.pazienti.index', $dottore)
-                         ->with('success', 'Paziente aggiornato con successo.');
+public function update(Request $request, User $dottore, User $paziente)
+{
+    // Controllo di autorizzazione
+    if (!$paziente->doctors->contains($dottore->id)) {
+        abort(403, 'Accesso non autorizzato');
     }
+
+    // Controllo manuale sul codice fiscale
+    $fiscalCode = strtoupper($request->input('fiscal_code'));
+
+if (strlen($fiscalCode) !== 16 || !preg_match('/^[A-Z0-9]{16}$/', $fiscalCode)) {
+    $errors = new MessageBag([
+        'fiscal_code' => ['Il codice fiscale deve contenere esattamente 16 caratteri alfanumerici.']
+    ]);
+
+  return redirect()
+    ->route('admin.dottori.pazienti.edit', ['dottore' => $dottore->id, 'paziente' => $paziente->id])
+    ->withErrors($errors)
+    ->withInput();
+}
+
+    // Validazione Laravel
+    $validated = $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'lastname' => ['required', 'string', 'max:255'],
+        'fiscal_code' => ['required', 'string'], // già validato sopra
+        'phone' => [
+            'required',
+            'string',
+            'max:20',
+            'regex:/^\+?[0-9\s\-]{7,20}$/',
+        ],
+        'email' => [
+            'required',
+            'email',
+            'max:255',
+            Rule::unique('users')->ignore($paziente->id),
+        ],
+    ], [
+        'phone.regex' => 'Il numero di telefono non è valido.',
+        'email.unique' => 'Questa email è già associata a un altro utente.',
+    ]);
+
+    // Aggiornamento paziente
+    $paziente->update($validated);
+
+    // Redirect con messaggio
+    return redirect()->route('admin.dottori.pazienti.index', ['dottore' => $dottore->id])
+                     ->with('success', 'Paziente aggiornato con successo.');
+}
+
+
 
     // Eliminazione paziente
     public function destroy(User $dottore, User $paziente)
     {
-        if ($paziente->dottore_id !== $dottore->id) {
+        if (!$paziente->doctors->contains($dottore->id)) {
             abort(403, 'Accesso non autorizzato');
         }
 

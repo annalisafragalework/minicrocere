@@ -1,110 +1,195 @@
 <?php
 
 namespace App\Http\Controllers\Auth;
-
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
-use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
- 
+use Illuminate\Support\Facades\DB;
+
 class RegisterController extends Controller
 {
-    use RegistersUsers;
-
     /**
-     * Where to redirect users after registration.
-     *
-     * @var string
+     * Dove reindirizzare dopo la registrazione.
      */
     protected $redirectTo = '/home';
 
-    /**
-     * Create a new controller instance.
-     */
     public function __construct()
     {
         $this->middleware('guest');
     }
 
     /**
-     * Get a validator for an incoming registration request.
+     * Mostra il form di registrazione.
+     */
+    public function create()
+    {
+           
+        return view('auth.register');
+    }
+
+    /**
+     * Validazione dei dati in ingresso.
      */
     protected function validator(array $data)
     {
         return Validator::make($data, [
-            'name'        => ['required', 'string', 'max:255'],
-            'lastname'    => ['nullable', 'string', 'max:255'],
-            'codefiscal'  => ['nullable', 'string', 'max:50'],
-            'vat_number'  => ['nullable', 'string', 'max:50'],
-            'phone'       => ['nullable', 'string', 'max:30'],
-            'email'       => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password'    => ['required', 'string', 'min:8', 'confirmed'],
+            'name'              => ['required', 'string', 'max:255'],
+            'lastname'          => ['nullable', 'string', 'max:255'],
+            'fiscal_code'        => ['nullable', 'string', 'max:50'],
+            'vat_number'        => ['nullable', 'string', 'max:50'],
+            'phone'             => ['nullable', 'string', 'max:30'],
+            'email'             => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password'          => ['required', 'string', 'min:8', 'confirmed'],
+            'subscription_id'   => ['nullable', 'string', 'max:255'],
+            'subscription_type' => ['nullable', 'string', 'max:50'],
+            'is_trial'          => ['nullable', 'boolean'],
         ]);
     }
-// Mostra il form di registrazione
-public function create()
-{
-    return view('auth.register');
-}
+
     /**
-     * Create a new user instance after a valid registration.
+     * Crea l'utente dopo registrazione valida.
      */
-protected function createUser(array $data)
-{
+    protected function createUser(array $data)
+    {
         return User::create([
-            'name'        => $data['name'],
-            'lastname'    => $data['lastname'] ?? null,
-            'codefiscal'  => $data['codefiscal'] ?? null,
-            'vat_number'  => $data['vat_number'] ?? null,
-            'phone'       => $data['phone'] ?? null,
-            'email'       => $data['email'],
-            'password'    => Hash::make($data['password']),
+            'name'              => $data['name'],
+            'lastname'          => $data['lastname'] ?? null,
+            'fiscal_code'        => $data['codefiscal'] ?? null,
+            'vat_number'        => $data['vat_number'] ?? null,
+            'phone'             => $data['phone'] ?? null,
+            'email'             => $data['email'],
+            'password'          => Hash::make($data['password']),
+            'subscription_id'   => $data['subscription_id'] ?? null,
+            'subscription_type' => $data['subscription_type'] ?? null,
+            'is_trial'          => $data['is_trial'] ?? 0,
         ]);
     }
+
+    /**
+     * Gestisce la registrazione POST.
+     */
 public function register(Request $request)
 {
-    $this->validator($request->all())->validate();
+    dd( Auth::user()->isMonthly());
+    // Validazione iniziale
+    $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+        'password' => ['required', 'string', 'min:8', 'confirmed'],
+        'is_trial' => ['nullable', 'boolean'],
+        'subscription_id' => ['nullable', 'string'],
+    ]);
 
-    $user = $this->createUser($request->all());
+    //  Verifica pagamento se non è prova gratuita
+    if (!$request->boolean('is_trial') && empty($request->subscription_id)) {
+        return redirect()->back()->withErrors([
+            'subscription_id' => 'Pagamento non completato.',
+        ])->withInput();
+    }
 
+    //  Creazione utente
+    $user = User::create([
+        'name' => $request->name,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'subscription_id' => $request->subscription_id,
+        'is_trial' => $request->boolean('is_trial'),
+    ]);
+
+    //  Assicurati che il ruolo esista
+    Role::firstOrCreate(['name' => 'dottore']);
+
+    //  Assegna ruolo "dottore" → aggiorna model_has_roles
+    $user->assignRole('dottore');
+
+    //  Evento di registrazione
     event(new Registered($user));
 
-    $this->guard()->login($user);
-
-    return redirect($this->redirectPath());
+    // Redirect con messaggio
+    return redirect()->route('login')->with('success', 'Registrazione completata. Ora puoi accedere.');
 }
-
-
 public function store(Request $request)
 {
-    $validated = $request->validate([
-        'name'        => 'required|string|max:255',
-        'lastname'    => 'nullable|string|max:255',
-        'codefiscal'  => 'nullable|string|max:50',
-        'vat_number'  => 'nullable|string|max:50',
-        'phone'       => 'nullable|string|max:30',
-        'email'       => 'required|email|unique:users,email',
-        'password'    => 'required|string|min:8|confirmed',
+  
+    // 1. VALIDAZIONE dei dati di registrazione (Essenziale!)
+    // Usiamo 'validate' che gestisce automaticamente gli errori di reindirizzamento.
+    $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'lastname' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+        'password' => ['required', 'string', 'min:8', 'confirmed'],
+        'fiscal_code' => ['required', 'string', 'unique:users'],
+        // Aggiungi qui tutte le regole di validazione per gli altri campi del form
     ]);
-
+    
+    // 2. CREAZIONE dell'Utente
+    // La flag 'is_trial' viene impostata qui, utilizzando il valore '1' inviato dal form.
     $user = User::create([
-        'name'        => $validated['name'],
-        'lastname'    => $validated['lastname'] ?? null,
-        'codefiscal'  => $validated['codefiscal'] ?? null,
-        'vat_number'  => $validated['vat_number'] ?? null,
-        'phone'       => $validated['phone'] ?? null,
-        'email'       => $validated['email'],
-        'password'    => Hash::make($validated['password']),
+        'name' => $request->name,
+        'lastname' => $request->lastname,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'fiscal_code' => $request->fiscal_code,
+        'vat_number' => $request->vat_number,
+        'phone' => $request->phone,
+        // Imposta lo stato di prova e la data di attivazione
+        'is_trial' =>2, 
+        // Assicurati che 'is_trial' e 'trial_activated_at' siano 'fillable' nel modello User
     ]);
-
-    $user->assignRole('dottore'); // o 'dottore', se serve
-
-    return redirect()->route('login')->with('success', 'Utente creato con successo');
+   
+DB::table('model_has_roles')->insert([
+    'role_id' => 2, // ID del ruolo "medico"
+    'model_type' => \App\Models\User::class,
+    'model_id' => $user->id,
+]);
+    
+    // 5. REDIREZIONE
+    return redirect()->route('login') // o la tua dashboard
+                     ->with('success', 'Registrazione completata! La tua prova gratuita è attiva.');
 }
-
-
+public function activateTrial(Request $request)
+{
+  
+    // 1. VALIDAZIONE dei dati di registrazione (Essenziale!)
+    // Usiamo 'validate' che gestisce automaticamente gli errori di reindirizzamento.
+    $request->validate([
+        'name' => ['required', 'string', 'max:255'],
+        'lastname' => ['required', 'string', 'max:255'],
+        'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+        'password' => ['required', 'string', 'min:8', 'confirmed'],
+        'fiscal_code' => ['required', 'string', 'unique:users'],
+        // Aggiungi qui tutte le regole di validazione per gli altri campi del form
+    ]);
+    
+    // 2. CREAZIONE dell'Utente
+    // La flag 'is_trial' viene impostata qui, utilizzando il valore '1' inviato dal form.
+    $user = User::create([
+        'name' => $request->name,
+        'lastname' => $request->lastname,
+        'email' => $request->email,
+        'password' => Hash::make($request->password),
+        'fiscal_code' => $request->fiscal_code,
+        'vat_number' => $request->vat_number,
+        'phone' => $request->phone,
+        // Imposta lo stato di prova e la data di attivazione
+        'is_trial' =>1, // O $request->is_trial se vuoi usare il valore dinamico del form
+        'trial_activated_at' => now(), 
+        // Assicurati che 'is_trial' e 'trial_activated_at' siano 'fillable' nel modello User
+    ]);
+   
+DB::table('model_has_roles')->insert([
+    'role_id' => 2, // ID del ruolo "medico"
+    'model_type' => \App\Models\User::class,
+    'model_id' => $user->id,
+]);
+    
+    // 5. REDIREZIONE
+    return redirect()->route('login') // o la tua dashboard
+                     ->with('success', 'Registrazione completata! La tua prova gratuita è attiva.');
+}
 
 }

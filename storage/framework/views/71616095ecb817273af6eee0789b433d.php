@@ -6,9 +6,11 @@
                 <i class="fas fa-home me-2"></i> Dashboard
             </a>
         </li>
+   
 <?php if(session('user_role') == 'administrator'): ?>
+ 
     <li class="nav-item mb-2">
-        <a class="nav-link text-white" href="<?php echo e(route('admin.dottori.index')); ?>">
+        <a class="nav-link text-white" href="<?php echo e(route('admin.dottori.lista')); ?>">
             <i class="fas fa-home me-2"></i> Dottori
         </a>
     </li>

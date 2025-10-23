@@ -13,7 +13,7 @@
         @endif
 
         {{-- Pulsante per creare nuovo utente --}}
-        <a href="{{ route('admin.dottori.create') }}" class="btn btn-primary mb-3">Nuovo Utente</a>
+        <a href="{{ route('admin.dottori.create') }}" class="btn btn-primary mb-3">Nuovo Dottore</a>
 
         {{-- Tabella dottori --}}
         <div class="table-responsive">
@@ -21,9 +21,12 @@
                 <thead class="table-light">
                     <tr>
                         <th>Nome</th>
+                        <th>Cognome</th>
+                        <th>Telefono</th>
                         <th>Email</th>
-                        <th>Ruoli</th>
-                        <th>Azioni</th>
+                      <th>Tipo Abbonamento</th>
+                         <th>Free</th> 
+                             <th>Operazioni</th> 
                     </tr>
                 </thead>
                 <tbody>
@@ -32,23 +35,34 @@
                             <td>
                   <a href="{{ route('admin.dottori.pazienti.delDottore', ['dottore' => $dottore->id]) }}" class="text-decoration-none">
                                 {{ $dottore->name }}
-                            </a>
-
+                            </a>                          
                             </td>
+                                 <td>
+                  
+                                {{ $dottore->Cognome }}
+                  
+                            </td>  
+                                <td>
+                  
+                                {{ $dottore->phone }}
+                  
+                            </td>  
                             <td>{{ $dottore->email }}</td>
-                            <td>{{ implode(', ', $dottore->getRoleNames()->toArray()) }}</td>
-                            <td>
-<a href="{{ route('admin.dottori.edit', $utente) }}" class="btn btn-sm btn-warning">
-    Modifica
-</a>
+                              <td>{{ $dottore->subscription_type }}</td>
+                               <td>{{ $dottore->is_trial}}</td> 
+                           <td>
+                            <a href="{{ route('admin.dottori.edit', $dottore->id) }}" class="btn btn-sm btn-warning">
+                                Modifica
+                            </a>
 
                                 <form action="{{ route('admin.dottori.destroy', $dottore) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Eliminare questo utente?')"
+                                        onclick="return confirm('Eliminare questo dottore?')"
                                         aria-label="Elimina {{ $dottore->name }}">Elimina</button>
                                 </form>
+                                 </td>  
                             </td>
                         </tr>
                     @endforeach
@@ -59,7 +73,7 @@
 
         {{-- Paginazione --}}
         <div class="d-flex justify-content-center">
-            {{ $dottori->links() }}
+           
         </div>
     </div>
 </main>

@@ -18,6 +18,9 @@
             <thead>
                 <tr>
                     <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Codice Fiscale</th>
+                    <th>Telefono</th>
                     <th>Email</th>
                     <th>Ruoli</th>
                     <th>Primario</th>
@@ -29,6 +32,9 @@
                 <?php $__currentLoopData = $pazienti; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $paziente): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <tr>
                         <td><?php echo e($paziente->name); ?></td>
+                        <td><?php echo e($paziente->lastname); ?></td>
+                        <td><?php echo e($paziente->fiscal_code); ?></td>
+                        <td><?php echo e($paziente->phone); ?></td>
                         <td><?php echo e($paziente->email); ?></td>
                         <td><?php echo e($paziente->roles->pluck('name')->join(', ')); ?></td>
                         <td><?php echo e($paziente->pivot->is_primary ? 'Sì' : 'No'); ?></td>

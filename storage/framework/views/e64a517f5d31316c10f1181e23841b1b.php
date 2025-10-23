@@ -1,3 +1,4 @@
+ 
 <?php $__env->startSection('content'); ?>
 <div class="container">
     <div class="row justify-content-center">
@@ -6,224 +7,227 @@
                 <div class="card-header"><?php echo e(__('Registrazione Medico')); ?></div>
 
                 <div class="card-body">
-                    <form method="POST" action="<?php echo e(route('register')); ?>">
-                        <?php echo csrf_field(); ?>
+                    
+                    <?php if(session('success')): ?>
+                        <div class="alert alert-success"><?php echo e(session('success')); ?></div>
+                    <?php endif; ?>
+                    <?php if(session('info')): ?>
+                        <div class="alert alert-info"><?php echo e(session('info')); ?></div>
+                    <?php endif; ?>
 
-                        <div class="row mb-3">
-                            <label for="name" class="col-md-4 col-form-label text-md-end"><?php echo e(__('Nome')); ?></label>
+                    
+                   <form method="POST" action="<?php echo e(route('register')); ?>" id="mainRegisterForm">
+    <?php echo csrf_field(); ?>
 
-                            <div class="col-md-6">
-                                <input id="name" type="text" class="form-control <?php $__errorArgs = ['name'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" name="name" value="<?php echo e(old('name')); ?>" required autocomplete="name" autofocus>
+    
+    <input type="hidden" name="is_trial" id="is_trial" value="0">
+    <input type="hidden" name="subscription_type" id="subscription_type">
+    <input type="hidden" name="subscription_id" id="subscription_id">
 
-                                <?php $__errorArgs = ['name'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong><?php echo e($message); ?></strong>
-                                    </span>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                            </div>
-                        </div>
-                <div class="row mb-3">
-                            <label for="lastname" class="col-md-4 col-form-label text-md-end"><?php echo e(__('Cognome')); ?></label>
+    
+    <div class="mb-3">
+        <label for="name">Nome</label>
+        <input id="name" name="name" type="text" class="form-control" required>
+    </div>
 
-                            <div class="col-md-6">
-                                <input id="name" type="text" class="form-control <?php $__errorArgs = ['lastname'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" name="lastname" value="<?php echo e(old('lastname')); ?>" required autocomplete="lastname" autofocus>
+    
+    <div class="mb-3">
+        <label for="lastname">Cognome</label>
+        <input id="lastname" name="lastname" type="text" class="form-control" required>
+    </div>
 
-                                <?php $__errorArgs = ['lastname'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong><?php echo e($message); ?></strong>
-                                    </span>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label for="codefiscal" class="col-md-4 col-form-label text-md-end"><?php echo e(__('Codice Fiscale')); ?></label>
+    
+    <div class="mb-3">
+        <label for="fiscal_code">Codice Fiscale</label>
+        <input id="fiscal_code" name="fiscal_code" type="text" class="form-control" required>
+    </div>
 
-                            <div class="col-md-6">
-                                <input id="codefiscal" type="text" class="form-control <?php $__errorArgs = ['codefiscal'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" name="codefiscal" value="<?php echo e(old('codefiscal')); ?>" required autocomplete="codefiscal" autofocus>
+    
+    <div class="mb-3">
+        <label for="vat_number">Partita IVA</label>
+        <input id="vat_number" name="vat_number" type="text" class="form-control" required>
+    </div>
 
-                                <?php $__errorArgs = ['codefiscal'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong><?php echo e($message); ?></strong>
-                                    </span>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label for="vat_number" class="col-md-4 col-form-label text-md-end"><?php echo e(__('Partita Iva')); ?></label>
+    
+    <div class="mb-3">
+        <label for="phone">Telefono</label>
+        <input id="phone" name="phone" type="text" class="form-control" required>
+    </div>
 
-                            <div class="col-md-6">
-                                <input id="vat_number" type="text" class="form-control <?php $__errorArgs = ['vat_number'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" name="vat_number" value="<?php echo e(old('vat_number')); ?>" required autocomplete="vat_number" autofocus>
+    
+    <div class="mb-3">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" class="form-control" required>
+    </div>
 
-                                <?php $__errorArgs = ['vat_number'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong><?php echo e($message); ?></strong>
-                                    </span>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                            </div>
-                        </div>
-                                  <div class="row mb-3">
-                            <label for="photo" class="col-md-4 col-form-label text-md-end"><?php echo e(__('Telefono')); ?></label>
+    
+    <div class="mb-3">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" class="form-control" required>
+    </div>
 
-                            <div class="col-md-6">
-                                <input id="phone" type="text" class="form-control <?php $__errorArgs = ['phone'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" name="phone" value="<?php echo e(old('phone')); ?>" required autocomplete="phone" autofocus>
+    
+    <div class="mb-3">
+        <label for="password_confirmation">Conferma Password</label>
+        <input id="password_confirmation" name="password_confirmation" type="password" class="form-control" required>
+    </div>
 
-                                <?php $__errorArgs = ['phone'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong><?php echo e($message); ?></strong>
-                                    </span>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                            </div>
-                        </div>
+    <hr>
+    <div class="text-center mb-3">
+        <strong>Scegli il tuo piano di abbonamento:</strong>
+    </div>
+
+    <div class="d-flex justify-content-around flex-wrap">
+        
+        <div class="mb-3 text-center">
+            <button 
+                type="button" 
+                class="btn btn-outline-secondary"
+                onclick="setTrialActionAndSubmit('<?php echo e(route('register.activate-trial')); ?>')">
+                Attiva prova gratuita
+            </button>
+        </div>
+
+        
+        <div class="mb-3 text-center">
+            <p>Mensile - 0,01€</p>
+            <button type="button" class="btn btn-primary" onclick="validateAndRenderPaypal()">
+                Procedi al pagamento
+            </button>
+            <div id="paypal-button-container" style="display: none;"></div>
+        </div>
+    </div>
+</form>
 
 
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end"><?php echo e(__('Email Address')); ?></label>
+ <script src="https://www.paypal.com/sdk/js?client-id=AT_Q4GZvWVoI36ArzZX-_MMFqUSXLHr0iXagV7tL5-Z4JfHchuz8CBOSDTIzhVnOYd2hfXFZrIoZ1Doe&vault=true&intent=subscription"></script>
 
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control <?php $__errorArgs = ['email'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" name="email" value="<?php echo e(old('email')); ?>" required autocomplete="email">
 
-                                <?php $__errorArgs = ['email'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong><?php echo e($message); ?></strong>
-                                    </span>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                            </div>
-                        </div>
+<script>
+function setTrialActionAndSubmit(trialUrl) {
+    const form = document.getElementById('mainRegisterForm');
+    if (!form) return console.error('Form non trovato');
 
-                        <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end"><?php echo e(__('Password')); ?></label>
+    const requiredFields = [
+        'name',
+        'lastname',
+        'fiscal_code',
+        'vat_number',
+        'phone',
+        'email',
+        'password',
+        'password_confirmation'
+    ];
 
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control <?php $__errorArgs = ['password'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>" name="password" required autocomplete="new-password">
+    let valid = true;
 
-                                <?php $__errorArgs = ['password'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?>
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong><?php echo e($message); ?></strong>
-                                    </span>
-                                <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?>
-                            </div>
-                        </div>
+    requiredFields.forEach(id => {
+        const input = document.getElementById(id);
+        if (!input || !input.value.trim()) {
+            if (input) {
+                input.classList.add('is-invalid');
+                input.classList.remove('is-valid');
+            }
+            valid = false;
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+        }
+    });
 
-                        <div class="row mb-3">
-                            <label for="password-confirm" class="col-md-4 col-form-label text-md-end"><?php echo e(__('Confirm Password')); ?></label>
+    // Verifica che le password coincidano
+    const password = document.getElementById('password');
+    const confirm = document.getElementById('password_confirmation');
+    if (password && confirm && password.value !== confirm.value) {
+        confirm.classList.add('is-invalid');
+        confirm.classList.remove('is-valid');
+        valid = false;
+    }
 
-                            <div class="col-md-6">
-                                <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
-                            </div>
-                        </div>
+    if (!valid) {
+        console.warn('Validazione fallita: controlla i campi evidenziati');
+        return;
+    }
 
-                        <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    <?php echo e(__('Register')); ?>
+    form.action = trialUrl;
 
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+    const trialInput = document.getElementById('is_trial');
+    if (trialInput) {
+        trialInput.value = 1;
+    }
+
+    disableButtons();
+    form.submit();
+}
+
+
+function validateAndRenderPaypal() {
+    const form = document.getElementById('mainRegisterForm');
+    const requiredFields = ['name', 'lastname', 'fiscal_code', 'vat_number', 'phone', 'email', 'password', 'password_confirmation'];
+    let valid = true;
+
+    requiredFields.forEach(id => {
+        const input = document.getElementById(id);
+        if (!input || !input.value.trim()) {
+            input.classList.add('is-invalid');
+            valid = false;
+        } else {
+            input.classList.remove('is-invalid');
+        }
+    });
+
+    if (!valid) return;
+
+    const container = document.getElementById('paypal-button-container');
+    container.style.display = 'block';
+
+    disableButtons();
+
+    if (!window.paypalRendered) {
+        window.paypalRendered = true;
+
+        paypal.Buttons({
+    createSubscription: function(data, actions) {
+        return actions.subscription.create({
+            plan_id: 'P-4A390585E6026180KNDYK56A'  
+        });
+    },
+    onApprove: function(data, actions) {
+        document.getElementById('subscription_type').value = 'monthly';
+        document.getElementById('subscription_id').value = data.subscriptionID;
+
+        document.getElementById('mainRegisterForm').submit();
+    },
+    onError: function(err) {
+        alert('Errore durante la sottoscrizione: ' + err);
+        enableButtons();
+    }
+}).render('#paypal-button-container');
+    }
+}
+
+function disableButtons() {
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(btn => btn.disabled = true);
+}
+
+function enableButtons() {
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(btn => btn.disabled = false);
+}
+</script>
+
+
+
+
+
                 </div>
             </div>
         </div>
     </div>
 </div>
 <?php $__env->stopSection(); ?>
+
+
 
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH /var/www/html/resources/views/auth/register.blade.php ENDPATH**/ ?>

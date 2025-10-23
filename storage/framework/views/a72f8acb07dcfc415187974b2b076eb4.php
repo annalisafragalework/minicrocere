@@ -1,3 +1,4 @@
+ 
 <?php $__env->startSection('content'); ?>
 <div class="container">
     <h2>Modifica Dottore</h2>
@@ -31,7 +32,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Salva modifiche</button>
-        <a href="<?php echo e(route('admin.dottori.index')); ?>" class="btn btn-secondary">Annulla</a>
+        <a href="<?php echo e(route('admin.dottori.lista')); ?>" class="btn btn-secondary">Annulla</a>
     </form>
 </div>
 <?php $__env->stopSection(); ?>

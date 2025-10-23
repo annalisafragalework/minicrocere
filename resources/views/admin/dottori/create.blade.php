@@ -1,10 +1,8 @@
- 
- 
+@extends('admin.master')
 
-{{--Il contenuto qui sotto riempirà lo @yield('content') nel tuo file master --}}
 @section('content')
 <div class="container">
-    <h2 class="mb-4">Nuovo Utente</h2>
+    <h2 class="mb-4">Nuovo Dottore</h2>
 
     {{-- Messaggi di errore --}}
     @if($errors->any())
@@ -18,7 +16,7 @@
     @endif
 
     {{-- Form --}}
-    <form action="{{ route('admin.utenti.store') }}" method="POST">
+    <form action="{{ route('admin.dottori.store') }}" method="POST">
         @csrf
 
         <div class="mb-3">
@@ -36,8 +34,9 @@
             <input type="password" name="password" id="password" class="form-control" required>
         </div>
 
-        <button type="submit" class="btn btn-success">Crea Utente</button>
-        <a href="{{ route('admin.utenti.index') }}" class="btn btn-secondary">Annulla</a>
+        <button type="submit" class="btn btn-success">Crea Dottore</button>
+        <a href="{{ route('admin.dottori.lista') }}" class="btn btn-secondary">Annulla</a>
     </form>
 </div>
  
+@endsection

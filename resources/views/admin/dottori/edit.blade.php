@@ -1,5 +1,5 @@
 @extends('admin.master')
-
+ 
 @section('content')
 <div class="container">
     <h2>Modifica Dottore</h2>
@@ -33,7 +33,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary">Salva modifiche</button>
-        <a href="{{ route('admin.dottori.index') }}" class="btn btn-secondary">Annulla</a>
+        <a href="{{ route('admin.dottori.lista') }}" class="btn btn-secondary">Annulla</a>
     </form>
 </div>
 @endsection

@@ -19,6 +19,9 @@
             <thead>
                 <tr>
                     <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Codice Fiscale</th>
+                    <th>Telefono</th>
                     <th>Email</th>
                     <th>Ruoli</th>
                     <th>Primario</th>
@@ -30,6 +33,9 @@
                 @foreach($pazienti as $paziente)
                     <tr>
                         <td>{{ $paziente->name }}</td>
+                        <td>{{ $paziente->lastname }}</td>
+                        <td>{{ $paziente->fiscal_code }}</td>
+                        <td>{{ $paziente->phone }}</td>
                         <td>{{ $paziente->email }}</td>
                         <td>{{ $paziente->roles->pluck('name')->join(', ') }}</td>
                         <td>{{ $paziente->pivot->is_primary ? 'Sì' : 'No' }}</td>
